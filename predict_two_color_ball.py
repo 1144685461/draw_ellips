@@ -10,30 +10,44 @@ class ProdictTwoColorBalls:
     BLUE_NUMS = 1
 
     def __init__(self):
-        self.red_balls = [ x for x in range(1, 34)]
-        self.blue_balls = [x for x in range(1, 17)]
+        self.red_bucket = [ x for x in range(1, 34)]
+        self.blue_bucket = [x for x in range(1, 17)]
         self.result = []
         self.history_result = []
-        # print("red_balls: ", self.red_balls)
-        # print("blue_balls: ", self.blue_balls)
+
+    def predict_random(self):
+        red_bucket = self.red_bucket
+        blue_bucket = self.blue_bucket
+        result = []
+        red_balls = random.sample(red_bucket, self.RED_NUMS)
+        red_balls.sort()
+        for blue in blue_bucket:
+            blue_ball = random.choice(blue_bucket)
+            if blue_ball not in red_balls:
+                break
+        for ball in red_balls:
+            result.append(ball)
+        result.append(blue_ball)
+        return result
 
     def predict(self, nums):
+        red_bucket = self.red_bucket[:]
+        blue_bucket = self.blue_bucket[:]
+
         for index in range(nums):
-            red_balls = random.sample(self.red_balls, self.RED_NUMS)
+            red_balls = random.sample(red_bucket, self.RED_NUMS)
             red_balls.sort()
-            for blue in self.blue_balls:
-                blue_ball = random.choice(self.blue_balls)
+            for blue in blue_bucket:
+                blue_ball = random.choice(blue_bucket)
                 if blue_ball not in red_balls:
                     break
-            # print("red_balls:", red_balls, ":", blue_ball)
-
             for val in red_balls:
-                self.red_balls.remove(val)
-            self.blue_balls.remove(blue_ball)
+               red_bucket.remove(val)
+            blue_bucket.remove(blue_ball)
             self.result.append([red_balls, blue_ball])
-
-        print("remaine red_balls:", self.red_balls)
-        print("remaine blue_balls:", self.blue_balls)
+            print(self.result[0]);
+        # print("remaine red_bucket:", red_bucket)
+        # print("remaine blue_bucket:", blue_bucket)
 
     def print_result(self):
         print('---------------------------------------------')
@@ -86,13 +100,27 @@ class ProdictTwoColorBalls:
     def analyze_history(self):
         print("add analyze_history ...")
 
+    def predict_dst(self, dst_two_color_balls):
+        nums = 0
+        while True:
+            two_color_balls = self.predict_random()
+            nums += 1
+            print("[",nums,"]:", two_color_balls)
+            if two_color_balls == dst_two_color_balls:
+                break
+        return nums
+
 if __name__ == "__main__":
     print("predict two color balls")
     prodictTcolor = ProdictTwoColorBalls()
-    #prodictTcolor.predict(5)
-    #prodictTcolor.print_result()
+    # prodictTcolor.predict(1)
+    # prodictTcolor.print_result()
     # prodictTcolor.getHistRes("http://kaijiang.500.com/shtml/ssq/22025.shtml")
     # prodictTcolor.saveHistRes("history.txt", 20000, 22026)
-    prodictTcolor.load_history_from_file("history.txt")
-    prodictTcolor.print_history()
-    prodictTcolor.analyze_history()
+    # prodictTcolor.load_history_from_file("history.txt")
+    # prodictTcolor.print_history()
+    # prodictTcolor.analyze_history()
+
+    dst_two_color_balls = [14, 15, 18, 19, 26, 32, 9]
+    nums = prodictTcolor.predict_dst(dst_two_color_balls)
+    print("预测号码：", dst_two_color_balls, " 需要 ", nums, " 次数")
