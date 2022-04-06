@@ -223,6 +223,65 @@ def draw_ellipse_points(coes, center, axises, angle, points):
     plt.savefig("test.png")
 
 ######################################################################################
+# find the farthest points from Points
+#  input param:
+#      points: Enter at least 5 dots
+#
+#  return two points co-ordinate
+#######################################################################################
+def find_farthest_points(points):
+    nums = len(points)
+    max, l,r = -1, 0, 0
+
+    for i  in range(nums):
+        for j  in range(i + 1, nums):
+            distance = (points[j][0] - points[i][0])**2 + (points[j][1] - points[i][1])**2
+            if (distance > max):
+                max = distance
+                l,r = i,j
+    return [points[l], points[r]]
+
+######################################################################################
+# Calculate lines coes
+#  input param:
+#   two points
+#
+#  Calculation formula
+#  y = (y1 - y0)/(x1 - x0)*x - x0*(y1 - y0)/(x1 - x0) + y0 
+#
+#  return [c, a, b] cy = ax + b
+#######################################################################################
+def calculate_line_coes(points):
+    x0, y0 = points[0][0], points[0][1]
+    x1, y1 = points[1][0], points[1][1]
+
+    if (x0 == x1):
+        return [0, 1, -x0]
+    else:
+        a = (y1 - y0)/(x1 - x0)
+        return [1, a, y0 - a*x0]
+
+######################################################################################
+# Calculate line coes
+#  input param:
+#   angle: angle with horizontal direction
+#   point: one point in line
+#
+#  Calculation formula
+#  y = tan(angle)(x - x0) + y0 
+#
+#  return [c, a, b] cy = ax + b
+#######################################################################################
+def calculate_line_coes(angle, point):
+    x0, y0 = point[0], point[1]
+
+    if (angle == 90):
+        return [0, 1, -x0]
+    else:
+        a = math.tan(angle)
+        return [1, a, y0 - a*x0]
+
+######################################################################################
 # draw_ellipse
 #  input param:
 #      coes:   Ax^2 + Bxy + Cy^2 + Dx + Ey + F = 0
@@ -301,20 +360,107 @@ def draw_ellipse(coes, center, axises, angle_x, points):
     plt.legend(loc='upper left')
     plt.savefig("test.png")
 
-if __name__ == "__main__":
-    print("find ellipse")
-    points = [[181, 250], [309, 296], [455, 305], [642, 269], [669, 251]]
+######################################################################################
+# draw_ellipse
+#  input param:
+#      points: input five point
+#
+#  draw：
+#      draw five points
+#      draw center point
+#      draw ellipse which base on center, a,b angle
+#      draw a axis
+#      draw b axis
+#
+#  print save ellipse png
+#######################################################################################
+def draw_ellipse(points):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    plt.title('draw ellips as 5 points')
+    # draw five points
+    points_x = [point[0] for point in points]
+    points_y = [point[1] for point in points]
+    ax.plot(points_x, points_y, 'ro')
+
+    # find cone coes
     IS_MATCH, coes = find_cone_coe(points)
     print("IS_MATCH:", IS_MATCH)
     if (IS_MATCH == False):
         print("输入的5个点无法构建出椭圆")
         exit(-1)
+
     print("coes:", coes)
     center = calculate_ellipse_center(coes)
     print("center:", center)
-    axis = calculate_ellipse_axis(coes, center)
-    print("axis:", axis)
-    x_angle = major_axis_angle(coes)
-    print("x_angle:", x_angle)
-    draw_ellipse(coes, center, axis, x_angle, points)
-    # draw_ellipse_points(coes, center, axis, x_angle, points)
+    axises = calculate_ellipse_axis(coes, center)
+    print("axises:", axises)
+    angle_x = major_axis_angle(coes)
+    print("angle_x:", angle_x)
+    f_two_points = find_farthest_points(points)
+    print("f_two_points:", f_two_points)
+
+    # draw center point
+    Cx = center[0]
+    Cy = center[1]
+    ax.plot(Cx, Cy, 'ro', label = "angle = " + str(round(angle_x, 2)))
+    ax.text(Cx, Cy, '({}, {})'.format(round(Cx, 2), round(Cy, 2)))
+    # use center, a,b angle to draw ellipse
+    a = axises[0]
+    b = axises[1]
+
+    print("a = %f b = %f" % (a, b))
+    ell1 = Ellipse(xy = (Cx,Cy), width = 2*a, height = 2*b, angle = angle_x)
+    ax.add_patch(ell1)
+    ell1.set(alpha=0.5,
+            fc='w',    # facecolor, red
+            ec='black',    # edgecolor, green
+            lw=3,    # line width
+            ls=':',    # line style
+            #label= "angle = " + str(round(angle_x, 2))
+            )
+
+    # draw a axis
+    lable_a = "a=" + str(round(a,2))
+    offset = a*math.cos(angle_x)*1.1
+    x_l = np.linspace(Cx - offset, Cx + offset, int(2*offset*100), dtype = float)
+
+    # lcy = lax + lb
+    lc, la, lb = calculate_line_coes(angle_x, center)
+    if (lc == 0):
+        y = 0*x_l
+    else:
+        y = la*x_l + lb
+    ax.plot(x_l, y, label = lable_a)
+
+    # draw b axis
+    lable_b = "b=" + str(round(b,2))
+    if (angle_x == 0):
+        x_l = [0, 0]
+        y = [-b*1.1, b*1.1]
+    else:
+        offset = b*math.sin(angle_x)*1.1
+        x_l  = np.linspace(Cx - offset , Cx + offset, int(2*offset*10), dtype = float)
+        y  = (1/math.tan(angle_x))*(x_l - Cx) + Cy
+    ax.plot(x_l, y, label = lable_b)
+
+    # draw farthest points lines
+    lable_f = "farthest"
+    x = [f_two_points[0][0], f_two_points[1][0]]
+    y = [f_two_points[0][1], f_two_points[1][1]]
+    ax.plot(x, y, label = lable_f)
+
+    # draw farthest points vertical lines
+    Cx = (f_two_points[0][0] + f_two_points[1][0])/2
+    Cy = (f_two_points[0][1] + f_two_points[1][1])/2
+    ax.plot(Cx, Cy, 'ro')
+    ax.text(Cx, Cy, '({}, {})'.format(round(Cx, 2), round(Cy, 2)))
+
+    plt.legend(loc='upper left')
+    plt.savefig("test.png")
+
+if __name__ == "__main__":
+    print("find ellipse")
+    points = [[181, 250], [309, 296], [455, 305], [642, 269], [669, 251]]
+    draw_ellipse(points)
