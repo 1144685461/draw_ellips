@@ -282,6 +282,80 @@ def calculate_line_coes(angle, point):
         return [1, a, y0 - a*x0]
 
 ######################################################################################
+# Calculate line coes
+#  input param:
+#   angle: angle with horizontal direction
+#   point: one point in line
+#
+#  Calculation formula
+#  y = tan(angle)(x - x0) + y0 
+#
+#  return [c, a, b] cy = ax + b
+#######################################################################################
+def calculate_vertical_line_coes(f_two_points, point):
+    if (f_two_points[1][0] == f_two_points[0][0]):
+        angle = 90
+    else:
+        angle_arc = (f_two_points[1][1] - f_two_points[0][1])/(f_two_points[1][0] - f_two_points[0][0])
+        angle = math.atan(angle_arc)
+
+    x0, y0 = point[0], point[1]
+
+    if (angle == 0):
+        return [0, 1, -x0]
+    else:
+        a = 1/math.tan(angle)
+        return [1, a, y0 - a*x0]
+
+######################################################################################
+# calculate_ellipse_and_line_cross_points
+#  input param:
+#   ellipse_coes: Ax^2 + Bxy + Cy^2 + Dx + Ey + F = 0
+#   line_coes: cy = ax + b
+#
+#  return IS_MATCH, Points
+#######################################################################################
+def calculate_ellipse_and_line_cross_points(coes, line_coes):
+    A, B, C, D, E, F = coes[0], coes[1], coes[2], coes[3], coes[4], coes[5]
+    c, a, b = line_coes[0], line_coes[1], line_coes[2]
+
+    # print(c, a, b)
+
+    if (c == 0):
+        x = -b/a
+        has_root, y1, y2 = root_formula(coes, x)
+        return has_root, [[x, y1], [x, y2]]
+
+    a1 = c*c*A + a*B*c + a*a*C
+    b1 = B*b*c + 2*a*b*C + D*c*c + E*a*c
+    c1 = C*b*b + E*b*c + F*c*c
+
+    # print(a1, b1, c1)
+
+    if (b1 * b1 < 4 * a1 * c1):
+        print("has no match x")
+        return False, [[0, 0]]
+    else:
+        has_root = True
+        x1 = (-b1 + math.sqrt(b1 * b1 - 4 * a1 * c1)) / (2 * a1)
+        x2 = (-b1 - math.sqrt(b1 * b1 - 4 * a1 * c1)) / (2 * a1)
+        print("x1 = ", x1)
+        print("x2 = ", x2)
+        has_root_x1, y1, y2 = root_formula(coes, x1)
+        print(has_root_x1, y1, y2)
+        has_root_x2, y3, y4 = root_formula(coes, x2)
+        print(has_root_x2, y3, y4)
+
+        if (has_root_x1 == True and has_root_x2 == True):
+            return True, [[x1, y1], [x1, y2], [x2, y3], [x2, y4]]
+        elif (has_root_x1 == True):
+            return True, [[x1, y1], [x1, y2]]
+        elif (has_root_x2 == True):
+            return True, [[x2, y3], [x2, y4]]
+        else:
+            return False, [[0, 0]]
+
+######################################################################################
 # draw_ellipse
 #  input param:
 #      coes:   Ax^2 + Bxy + Cy^2 + Dx + Ey + F = 0
@@ -436,6 +510,15 @@ def draw_ellipse(points):
 
     # draw b axis
     lable_b = "b=" + str(round(b,2))
+    # angle_y = (90+angle_x) if angle_x < 90 else (angle_x-90)
+    # lc, la, lb = calculate_line_coes(angle_y, center)
+    # offset = abs(b*1.1*math.sin(angle_y))
+    # y = np.linspace(Cy - offset, Cy+ offset, int(2*offset*100), dtype = float)
+
+    # if (la == 0):
+    #      x_l = 0*y_l
+    # else:
+    #     x_l = (lc/la)*y - lb/la
     if (angle_x == 0):
         x_l = [0, 0]
         y = [-b*1.1, b*1.1]
@@ -443,6 +526,7 @@ def draw_ellipse(points):
         offset = b*math.sin(angle_x)*1.1
         x_l  = np.linspace(Cx - offset , Cx + offset, int(2*offset*10), dtype = float)
         y  = (1/math.tan(angle_x))*(x_l - Cx) + Cy
+
     ax.plot(x_l, y, label = lable_b)
 
     # draw farthest points lines
@@ -456,6 +540,26 @@ def draw_ellipse(points):
     Cy = (f_two_points[0][1] + f_two_points[1][1])/2
     ax.plot(Cx, Cy, 'ro')
     ax.text(Cx, Cy, '({}, {})'.format(round(Cx, 2), round(Cy, 2)))
+
+    # calculate vertical line cy = ax + b
+    lc, la, lb = calculate_vertical_line_coes(f_two_points, [Cx, Cy])
+    print(lc, la, lb)
+
+    # 临时测试用
+    offset = 0.2
+    x_l = np.linspace(Cx - offset, Cx + offset, int(2*offset*100), dtype = float)
+    y = la*x_l + lb
+    ax.plot(x_l, y)
+
+    # 计算直线与椭圆交叉的
+    ret, points = calculate_ellipse_and_line_cross_points(coes, [lc, la, lb])
+
+    # 绘制交叉点
+    for point in points:
+        x = point[0]
+        y = point[1]
+        ax.plot(x, y, 'ro')
+        ax.text(x, y, '({}, {})'.format(round(x, 2), round(y, 2)))
 
     plt.legend(loc='upper left')
     plt.savefig("test.png")
