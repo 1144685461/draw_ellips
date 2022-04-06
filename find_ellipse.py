@@ -7,86 +7,6 @@ import numpy.linalg as lg
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 
-
-def draw_points(points):
-    print(points)
-    points_x = [point[0] for point in points]
-    points_y = [point[1] for point in points]
-
-    plt.xlim(xmax=1000, xmin=0)
-    plt.ylim(ymax=1000, ymin=0)
-
-    #plt.title("任意五个点")
-    plt.plot(points_x, points_y, 'ro')
-    # #plt.show()
-    plt.savefig("test.png")
-
-# Ax^2 + Bxy + Cy^2 + Dx + Ey + F = 0
-def draw_ellipse(center, axises):
-    print(center)
-    print(axises)
-    # img = data.chelsea()
-    # #rr,cc = draw.ellipse(center[1], center[0], axises[1], axises[0])
-    # rr,cc = draw.ellipse(300, 300, 60, 120)
-    # print("rr:", rr)
-    # print("cc", cc)
-    # draw.set_color(img, [rr, cc], [0, 255, 255])
-    # plt.imshow(img, plt.cm.gray)
-    # plt.show()
-    # plt.savefig("test.png")
-    # 创建画布
-    # fig = plt.figure(figsize=(12, 8), facecolor='beige')
-    # axes = fig.subplots(nrows=1, ncols=1, subplot_kw={'aspect': 'equal'})
-    # ax = axes[0, 0]
-    # ellipse = Ellipse(xy=(center[0],center[1]), width=axises[0], height=axises[1], angle=0)
-    # plt.plot(p=ellipse)
-    # ellipse.set(alpha=0.4, color='lightskyblue')
-    # plt.savefig("test.png")
-
-def test_solve():
-    A = np.array([[1, 1, 1], [0, 2, 5], [2, 5, -1]])
-    print("系数矩阵:\n", A)
-    b = np.array([[6], [-4], [27]])
-    print("矩阵b:\n", b)
-    X = lg.solve(A, b)
-    print("X=\n", X)
-    is_match = np.allclose(np.dot(A, X), b)
-    print("is_match:", is_match)
-
-########################################################
-# # Ax^2 + Bxy + Cy^2 + Dx + Ey + F = 0
-# # Bxy + Cy^2 + Dx + Ey + F = -x^2
-
-########################################################
-def find_ellipse(p1, p2, p3, p4, p5):
-    x1, y1, x2, y2, x3, y3, x4, y4, x5, y5 = p1[0], p1[1], p2[0], p2[1], p3[0], p3[1], p4[0], p4[1], p5[0], p5[1]
-
-    a = np.array([
-        [x1 * y1, y1 * y1, x1, y1, 1],
-        [x2 * y2, y2 * y2, x2, y2, 1],
-        [x3 * y3, y3 * y3, x3, y3, 1],
-        [x4 * y4, y4 * y4, x4, y4, 1],
-        [x5 * y5, y5 * y5, x5, y5, 1],
-    ])
-
-    print("a = \n", a)
-    b = np.array([-x1*x1, -x2*x2, -x3*x3, -x4*x4, -x5*x5])
-    print("b = \n", b)
-
-    x = np.linalg.solve(a, b)
-
-    B, C, D, E, F = x[0], x[1], x[2], x[3], x[4]
-
-    A = -(B * x1 * y1 + C * y1 * y1 + D * x1 + E * y1 + F) / (x1 * x1)
-
-    print("coe = ", A)
-    print(" xx :", A, B, C, D, E, F)
-
-    #is_match = np.allclose(np.dot(a, X), b)
-    #print("is_match:", is_match)
-
-    return [A, B, C, D, E, F]
-
 ########################################################
 # Calculate the conic factor Find the Cone Coefficient
 #  input param: five points
@@ -383,7 +303,6 @@ def draw_ellipse(coes, center, axises, angle_x, points):
 
 if __name__ == "__main__":
     print("find ellipse")
-    #test_solve()
     points = [[181, 250], [309, 296], [455, 305], [642, 269], [669, 251]]
     IS_MATCH, coes = find_cone_coe(points)
     print("IS_MATCH:", IS_MATCH)
