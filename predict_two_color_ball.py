@@ -15,6 +15,17 @@ class ProdictTwoColorBalls:
         self.result = []
         self.history_result = []
 
+    def predict_dst(self, dst_two_color_balls, predict):
+        nums = 0
+        while True:
+            #two_color_balls = self.predict_random()
+            two_color_balls = predict()
+            nums += 1
+            print("[",nums,"]:", two_color_balls)
+            if two_color_balls == dst_two_color_balls:
+                break
+        return nums
+
     def predict_random(self):
         red_bucket = self.red_bucket
         blue_bucket = self.blue_bucket
@@ -100,16 +111,6 @@ class ProdictTwoColorBalls:
     def analyze_history(self):
         print("add analyze_history ...")
 
-    def predict_dst(self, dst_two_color_balls):
-        nums = 0
-        while True:
-            two_color_balls = self.predict_random()
-            nums += 1
-            print("[",nums,"]:", two_color_balls)
-            if two_color_balls == dst_two_color_balls:
-                break
-        return nums
-
 if __name__ == "__main__":
     print("predict two color balls")
     prodictTcolor = ProdictTwoColorBalls()
@@ -117,10 +118,11 @@ if __name__ == "__main__":
     # prodictTcolor.print_result()
     # prodictTcolor.getHistRes("http://kaijiang.500.com/shtml/ssq/22025.shtml")
     # prodictTcolor.saveHistRes("history.txt", 20000, 22026)
-    # prodictTcolor.load_history_from_file("history.txt")
-    # prodictTcolor.print_history()
-    # prodictTcolor.analyze_history()
 
-    dst_two_color_balls = [14, 15, 18, 19, 26, 32, 9]
-    nums = prodictTcolor.predict_dst(dst_two_color_balls)
-    print("预测号码：", dst_two_color_balls, " 需要 ", nums, " 次数")
+    prodictTcolor.load_history_from_file("history.txt")
+    prodictTcolor.print_history()
+    prodictTcolor.analyze_history()
+
+    # dst_two_color_balls = [14, 15, 18, 19, 26, 32, 9]
+    # nums = prodictTcolor.predict_dst(dst_two_color_balls, prodictTcolor.predict_random)
+    # print("预测号码：", dst_two_color_balls, " 需要 ", nums, " 次数")
